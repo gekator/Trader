@@ -82,3 +82,11 @@ class Trader():
     else:
       self.table = pd.concat([self.table, df])
     self.tab = self.table.set_index('Date')
+
+  def getCashResult(self):
+    cashFinal = self.tab["Account_money"].values[-1] - self.tab["Account_money"].values[0]
+    return cashFinal
+  
+  def getAccountMoneyFroCurrentData(self, data):
+    acm = self.tab["Account_money"].values[data]
+    return acm

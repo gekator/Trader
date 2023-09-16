@@ -14,13 +14,17 @@ class Trader():
     self.start_money = 0
     self.state = ''
     self.comis = comis
+    self.moexComis = 50
     #print("printBool------------------------------------------------------------------", printBool)
+
+  def calcComis(self, prices, volumes):
+    return prices*volumes/100*self.comis + self.moexComis
         
   def buy(self, volume, price):
     if self.volume < 0:
       if self.printBool == True:
         print("\nBuy with price,", price, "Short_Close_Sum", volume * price, "\n")
-      self.my_money = self.my_money + self.start_money + self.start_money - volume * price - self.comis
+      self.my_money = self.my_money + self.start_money + self.start_money - volume * price - (price*volume/100*self.comis + 50)
     self.volume = self.volume + volume
     #print("self.volume", self.volume)
     #print("buying+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
@@ -31,7 +35,7 @@ class Trader():
       if self.printBool == True:
         print("\nBuy with price", price, "Open_Long_Sum", volume * price, "\n" )
       self.state = 'Long'
-      self.my_money = self.my_money - volume * price  -  self.comis
+      self.my_money = self.my_money - volume * price  -  (price*volume/100*self.comis + 50)
     elif self.volume == 0:
       self.state = ''
       self.start_money = 0
@@ -41,11 +45,11 @@ class Trader():
     if self.volume > 0:
       if self.printBool == True:
         print("\nSell with price,", price, "Long_Close_Sum", volume * price, "\n")
-      self.my_money = self.my_money + volume * price -  self.comis
+      self.my_money = self.my_money + volume * price -  (price*volume/100*self.comis + 50)
       self.volume = self.volume - volume
     elif self.volume == 0:
       self.volume = self.volume - volume
-      self.my_money = self.my_money - volume * price -  self.comis
+      self.my_money = self.my_money - volume * price -  (price*volume/100*self.comis + 50)
         
     if self.volume < 0:
       if self.printBool == True:

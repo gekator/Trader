@@ -12,7 +12,7 @@ class Trader():
     self.dater = []
     self.money_of_stock = 0 #стоимость вложений, используется только для записи в таблицу параметров счета
     self.start_money = 0 #нужен для вычисления шорта
-    self.money
+    self.moneyOnStartDeal = 0
     self.state = ''
     self.comis = comis
     self.moexComis = 50
@@ -37,11 +37,15 @@ class Trader():
         print("\nBuy with price", price, "Open_Long_Sum", orderVolume * price, "\n" )
       self.state = 'Long'
       self.my_money = self.my_money - orderVolume * price  -  self.calcComis(price,orderVolume)
+      if self.moneyOnStartDeal == 0:# то есть вычисляем только на первой покупке, при входе в позицию, если докупаем, то не считаем, так как нужно будет както усреднять
+        self.moneyOnStartDeal = self.calcAccountMoney(price)
     elif self.posVolume == 0:
       self.state = ''
       self.start_money = 0
+      self.moneyOnStartDeal = 0
       #print("stat0000000000000000000000000")
-        
+    #return self.my_money
+
   def sell(self, orderVolume, price):
     if self.posVolume > 0:
       if self.printBool == True:
@@ -51,7 +55,8 @@ class Trader():
     elif self.posVolume == 0:
       self.posVolume = self.posVolume - orderVolume
       self.my_money = self.my_money - orderVolume * price -  self.calcComis(price,orderVolume)
-        
+      if self.moneyOnStartDeal == 0:# то есть вычисляем только на первой продаже, при входе в позицию, если докупаем, то не считаем, так как нужно будет както усреднять
+        self.moneyOnStartDeal = self.calcAccountMoney(price)
     if self.posVolume < 0:
       if self.printBool == True:
         print("\nSell with price,", price, "Open_Short_sum", orderVolume * price, "\n")
@@ -62,13 +67,15 @@ class Trader():
     elif self.posVolume == 0:
       self.state = ''
       self.start_money = 0
+      self.moneyOnStartDeal = 0
   
   def calcAccountMoney(self, price):
     if self.state == 'Short':
       return self.start_money + self.start_money + self.posVolume * price + self.my_money
     else:
+      #print(self.posVolume * price + self.my_money)
       return self.posVolume * price + self.my_money
-
+  
   def quant_money(self, price, date_now):
     self.money_of_stock =abs(self.posVolume * price)
     #self.Stock_Cash.append(self.posVolume * price)
@@ -88,6 +95,7 @@ class Trader():
     else:
       self.table = pd.concat([self.table, df])
     self.tab = self.table.set_index('Date')
+    return self.getCurrentProfit(price)
 
   def getCashResult(self):
     cashFinal = self.tab["Account_money"].values[-1] - self.tab["Account_money"].values[0]
@@ -96,3 +104,10 @@ class Trader():
   def getAccountMoneyFroCurrentData(self, data):
     acm = self.tab["Account_money"].values[data]
     return acm
+  
+  def getCurrentProfit(self, price):
+    #print(self.moneyOnStartDeal)
+    #print(self.calcAccountMoney(price))
+    #print(self.calcAccountMoney(price) - self.moneyOnStartDeal)
+    return self.calcAccountMoney(price) - self.moneyOnStartDeal - self.calcComis(price, self.posVolume)
+  

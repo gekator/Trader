@@ -9,6 +9,7 @@ class Trader():
     #self.Stock_Cash = []
     self.my_money = money #мои деньги которые никуда не вложены
     self.table = pd.DataFrame({'Date':[0], 'Stock_Cash':[0], "My_money":[self.my_money], "Account_money":[self.my_money] })
+    self.table = self.table.set_index('Date')
     self.dater = []
     self.money_of_stock = 0 #стоимость вложений, используется только для записи в таблицу параметров счета
     self.start_money = 0 #нужен для вычисления шорта
@@ -70,6 +71,7 @@ class Trader():
       self.moneyOnStartDeal = 0
   
   def calcAccountMoney(self, price):
+    #подсчитывает цену активов
     if self.state == 'Short':
       return self.start_money + self.start_money + self.posVolume * price + self.my_money
     else:
@@ -77,16 +79,17 @@ class Trader():
       return self.posVolume * price + self.my_money
   
   def quant_money(self, price, date_now):
+    #обновляет таблицу по счетам
     self.money_of_stock =abs(self.posVolume * price)
     #self.Stock_Cash.append(self.posVolume * price)
     self.account_money =  self.calcAccountMoney(price) #мои деньги и вложения
     if self.printBool == True:
       print("Quant money: Account_money", self.account_money, "posVolume*price",  self.posVolume*price, "my_money, ", self.my_money, "cur_price, ", price, "\n")
     df = pd.DataFrame({"Date":[date_now],
-                      "Stock_Cash":[self.money_of_stock],
-                      "My_money":[self.my_money],
-                      "Account_money":[self.account_money]})
-      #print(df)
+                      "Stock_Cash":[int(self.money_of_stock)],
+                      "My_money":[int(self.my_money)],
+                      "Account_money":[int(self.account_money)]})
+    df = df.set_index('Date')
       #Некоторая обработка таблицы
     if self.table.iloc[0, 0] == 0:
       self.table.iloc[0, 0] = date_now
@@ -94,15 +97,15 @@ class Trader():
       pass
     else:
       self.table = pd.concat([self.table, df])
-    self.tab = self.table.set_index('Date')
     return self.getCurrentProfit(price)
 
   def getCashResult(self):
-    cashFinal = self.tab["Account_money"].values[-1] - self.tab["Account_money"].values[0]
+    cashFinal = self.table["Account_money"].values[-1] - self.table["Account_money"].values[0]
     return cashFinal
   
-  def getAccountMoneyFroCurrentData(self, data):
-    acm = self.tab["Account_money"].values[data]
+  def getAccountMoneyForCurrentData(self, data):
+    #выдает сумму денег и активов на счете
+    acm = self.table["Account_money"].values[data]
     return acm
   
   def getCurrentProfit(self, price):

@@ -11,7 +11,7 @@ class TestTrader(unittest.TestCase):
     self.backtester = Trader(df1, 700000, 0.043, False)
   #Each test method starts with the keyword test_
   def test_buy(self):
-    #self.assertAlmostEqual(self.backtester.buy(50000, 13.486), 25360.050999999978)
+    self.assertAlmostEqual(self.backtester.buy(50000, 13.486), 25360.050999999978)
     self.assertEqual(self.backtester.calcAccountMoney(13.486), 699660.051)
     self.assertAlmostEqual(self.backtester.getCurrentProfit(14.000), 25348.99999000004, places=4)
 # Executing the tests in the above test case class

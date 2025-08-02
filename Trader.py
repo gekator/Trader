@@ -15,8 +15,8 @@ class Trader():
     self.start_money = 0 #нужен для вычисления шорта
     self.moneyOnStartDeal = 0
     self.state = ''
-    self.comis = comis
-    self.moexComis = 50
+    self.comis = comis[0]
+    self.moexComis = comis[1]
     #print("printBool------------------------------------------------------------------", printBool)
 
   def calcComis(self, prices, volumes):
@@ -26,20 +26,23 @@ class Trader():
     if self.posVolume < 0:
       if self.printBool == True:
         print("\nBuy with price,", price, "Short_Close_Sum", orderVolume * price, "\n")# Здесь может и не закрыться шорт
-      self.my_money = self.my_money + self.start_money + self.start_money - orderVolume * price - self.calcComis(price,orderVolume)
-    self.posVolume = self.posVolume + orderVolume
+      self.my_money = self.my_money + self.start_money + self.start_money - orderVolume * price - self.calcComis(price,abs(orderVolume))
+      self.posVolume = self.posVolume + orderVolume
+    elif self.posVolume == 0:
+      if self.moneyOnStartDeal == 0:# то есть вычисляем только на первой покупке, при входе в позицию, если докупаем, то не считаем, так как нужно будет както усреднять
+        self.moneyOnStartDeal = self.calcAccountMoney(price)
+        #print("self.moneyOnStartDeal = self.calcAccountMoney(price)", self.moneyOnStartDeal)
+      self.posVolume = self.posVolume + orderVolume
     #print("self.posVolume", self.posVolume)
     #print("buying+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     #self.Stock_Cash.append(self.posVolume * price)
     if self.posVolume > 0:
-      #print("self.posVolume > 0")
-      #print("self.printBool == True", self.printBool == True)
       if self.printBool == True:
         print("\nBuy with price", price, "Open_Long_Sum", orderVolume * price, "\n" )
+      #print("self.posVolume > 0")
+      #print("self.printBool == True", self.printBool == True)
       self.state = 'Long'
-      self.my_money = self.my_money - orderVolume * price  -  self.calcComis(price,orderVolume)
-      if self.moneyOnStartDeal == 0:# то есть вычисляем только на первой покупке, при входе в позицию, если докупаем, то не считаем, так как нужно будет както усреднять
-        self.moneyOnStartDeal = self.calcAccountMoney(price)
+      self.my_money = self.my_money - orderVolume * price  -  self.calcComis(price,abs(orderVolume))
     elif self.posVolume == 0:
       self.state = ''
       self.start_money = 0
@@ -51,13 +54,14 @@ class Trader():
     if self.posVolume > 0:
       if self.printBool == True:
         print("\nSell with price,", price, "Long_Close_Sum", orderVolume * price, "\n")
-      self.my_money = self.my_money + orderVolume * price -  self.calcComis(price,orderVolume)
+      self.my_money = self.my_money + orderVolume * price -  self.calcComis(price,abs(orderVolume))
       self.posVolume = self.posVolume - orderVolume
     elif self.posVolume == 0:
-      self.posVolume = self.posVolume - orderVolume
-      self.my_money = self.my_money - orderVolume * price -  self.calcComis(price,orderVolume)
       if self.moneyOnStartDeal == 0:# то есть вычисляем только на первой продаже, при входе в позицию, если докупаем, то не считаем, так как нужно будет както усреднять
         self.moneyOnStartDeal = self.calcAccountMoney(price)
+      self.posVolume = self.posVolume - orderVolume
+      self.my_money = self.my_money - orderVolume * price -  self.calcComis(price,abs(orderVolume))
+      
     if self.posVolume < 0:
       if self.printBool == True:
         print("\nSell with price,", price, "Open_Short_sum", orderVolume * price, "\n")
@@ -70,7 +74,7 @@ class Trader():
       self.start_money = 0
       self.moneyOnStartDeal = 0
   
-  def calcAccountMoney(self, price):
+  def  calcAccountMoney(self, price):
     #подсчитывает цену активов
     if self.state == 'Short':
       return self.start_money + self.start_money + self.posVolume * price + self.my_money
@@ -109,8 +113,9 @@ class Trader():
     return acm
   
   def getCurrentProfit(self, price):
-    #print(self.moneyOnStartDeal)
-    #print(self.calcAccountMoney(price))
-    #print(self.calcAccountMoney(price) - self.moneyOnStartDeal)
-    return self.calcAccountMoney(price) - self.moneyOnStartDeal - self.calcComis(price, self.posVolume)
+    #print("moneyOnStartDeal", self.moneyOnStartDeal)
+    #print("calcAccountMoney(price)", self.calcAccountMoney(price))
+    #print('self.calcComis(price, self.posVolume)', self.calcComis(price, abs(self.posVolume)))
+    #print("self.calcAccountMoney(price) - self.moneyOnStartDeal)", self.calcAccountMoney(price) - self.moneyOnStartDeal)
+    return self.calcAccountMoney(price) - self.moneyOnStartDeal - self.calcComis(price, abs(self.posVolume))
   

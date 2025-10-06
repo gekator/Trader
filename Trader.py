@@ -2,21 +2,23 @@ import pandas as pd
 import numpy as np
 
 class Trader():
-  def __init__(self, stock, money, comis, printBool):
+  def __init__(self,  money, comis, printBool, stock=None):
     self.stock =  stock
     self.posVolume = 0
     self.printBool = printBool
     #self.Stock_Cash = []
     self.my_money = money #мои деньги которые никуда не вложены
+    self.my_first_money = money #мои деньги которые никуда не вложены
     self.table = pd.DataFrame({'Date':[0], 'Stock_Cash':[0], "My_money":[self.my_money], "Account_money":[self.my_money] })
     self.table = self.table.set_index('Date')
     self.dater = []
     self.money_of_stock = 0 #стоимость вложений, используется только для записи в таблицу параметров счета
     self.start_money = 0 #нужен для вычисления шорта
     self.moneyOnStartDeal = 0
-    self.state = ''
+    self.state = 'zero'
     self.comis = comis[0]
     self.moexComis = comis[1]
+    self.price_of_pos = 0
     #print("printBool------------------------------------------------------------------", printBool)
 
   def calcComis(self, prices, volumes):
@@ -44,7 +46,7 @@ class Trader():
       self.state = 'Long'
       self.my_money = self.my_money - orderVolume * price  -  self.calcComis(price,abs(orderVolume))
     elif self.posVolume == 0:
-      self.state = ''
+      self.state = 'zero'
       self.start_money = 0
       self.moneyOnStartDeal = 0
       #print("stat0000000000000000000000000")
@@ -70,11 +72,11 @@ class Trader():
       if self.printBool == True:
         print("SELL, self.start_money", self.start_money, "my_money", self.my_money, "\n")
     elif self.posVolume == 0:
-      self.state = ''
+      self.state = 'zero'
       self.start_money = 0
       self.moneyOnStartDeal = 0
   
-  def  calcAccountMoney(self, price):
+  def calcAccountMoney(self, price):
     #подсчитывает цену активов
     if self.state == 'Short':
       return self.start_money + self.start_money + self.posVolume * price + self.my_money
@@ -94,17 +96,17 @@ class Trader():
                       "My_money":[int(self.my_money)],
                       "Account_money":[int(self.account_money)]})
     df = df.set_index('Date')
-      #Некоторая обработка таблицы
-    if self.table.iloc[0, 0] == 0:
-      self.table.iloc[0, 0] = date_now
-    if self.table.iloc[0, 0] == df.iloc[0, 0]:
-      pass
-    else:
-      self.table = pd.concat([self.table, df])
+    #Некоторая обработка таблицы
+
+    self.table = pd.concat([self.table, df])
     return self.getCurrentProfit(price)
 
   def getCashResult(self):
     cashFinal = self.table["Account_money"].values[-1] - self.table["Account_money"].values[0]
+    return cashFinal
+  
+  def getCashResultFast(self, price):
+    cashFinal = self.calcAccountMoney(price) - self.my_first_money
     return cashFinal
   
   def getAccountMoneyForCurrentData(self, data):

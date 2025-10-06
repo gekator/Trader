@@ -59,9 +59,9 @@ print(trader.table)
 The project includes a comprehensive test suite:
 
 ```bash
-python -m pytest TestTrader.txt
+python -m pytest TestTrader.py
 # or
-python TestTrader.txt
+python TestTrader.py
 ```
 
 Tests cover:
@@ -76,8 +76,8 @@ Tests cover:
 
 ```
 .
-├── Trader.txt          # Core Trader class (rename to Trader.py in real use)
-├── TestTrader.txt      # Unit tests (rename to TestTrader.py)
+├── Trader.py          # Core Trader class (rename to Trader.py in real use)
+├── TestTrader.py      # Unit tests (rename to TestTrader.py)
 └── CNY000000TOD_22-6-2022_18-7-2023_Test.txt  # Sample market data (CSV format expected)
 ```
 
